@@ -93,7 +93,7 @@ wd76_memory_bank_size wd76_get_memory_bank_size(wd76_memory_bank bank) {
       break;
     
     default:
-      return 0xFFFF;
+      return WD76_BNK_UNKNOWN;
       break;
   }
 }

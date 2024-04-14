@@ -80,7 +80,8 @@ typedef enum wd76_memory_bank_size {
   WD76_BNK_64KBIT  = 0,
   WD76_BNK_256KBIT = 1,
   WD76_BNK_1MBIT   = 2,
-  WD76_BNK_4MBIT   = 3
+  WD76_BNK_4MBIT   = 3,
+  WD76_BNK_UNKNOWN = 255
 } wd76_memory_bank_size;
 
  // Bit 11
