@@ -9,6 +9,12 @@ typedef enum wd76_bios_shadow {
   WD76_SHD_SPLIT_64KB = 3  // 0C0000-0CFFFF, 0F0000-0FFFFF
 } wd76_bios_shadow;
 
+// RAM shadow bit 7
+typedef enum wd76_bios_shadow_extra_memory {
+  WD76_X_MEM_DISABLED = 0,
+  WD76_X_MEM_ENABLED  = 1
+} wd76_bios_shadow_extra_memory;
+
 // RAM shadow bit 12
 typedef enum wd76_bios_shadow_write_protect {
   WD76_SHD_WP_DISABLED = 0,
@@ -102,6 +108,13 @@ typedef enum wd76_parity_status {
   WD76_PAR_DISABLED = 1
 } wd76_parity_status;
 
+// RAM shadow bits 2-3
+typedef enum wd76_rom_type {
+  WD76_ROM_TYP_128KB      = 0,
+  WD76_ROM_TYP_64KB       = 1,
+  WD76_ROM_TYP_SPLIT_64KB = 2
+} wd76_rom_type;
+
 // split start bits 8-9
 typedef enum wd76_split_size {
   WD76_SPLIT_NONE  = 0,
@@ -110,7 +123,16 @@ typedef enum wd76_split_size {
   WD76_SPLIT_384KB = 3
 } wd76_split_size;
 
+// RAM shadow bits 4-5
+typedef enum wd76_video_bios_size {
+  WD76_VB_SIZ_16KB = 0,
+  WD76_VB_SIZ_32KB = 1,
+  WD76_VB_SIZ_48KB = 2,
+  WD76_VB_SIZ_64KB = 3
+} wd76_video_bios_size;
+
 wd76_bios_shadow wd76_get_bios_shadow();
+wd76_bios_shadow_extra_memory wd76_get_bios_shadow_extra_memory();
 wd76_bios_shadow_write_protect wd76_get_bios_shadow_write_protect();
 wd76_cache_mode wd76_get_cache_mode();
 wd76_disabled_memory wd76_get_disabled_memory();
@@ -124,7 +146,9 @@ wd76_memory_bank_status wd76_get_memory_bank_status(wd76_memory_bank bank);
 wd76_page_mode_cas_width wd76_get_memory_page_mode_cas_width();
 wd76_page_mode wd76_get_page_mode();
 wd76_parity_status wd76_get_parity_status();
+wd76_rom_type wd76_get_rom_type();
 wd76_split_size wd76_get_split_size();
 unsigned int wd76_get_split_start_address();
+wd76_video_bios_size wd76_get_video_bios_size();
 
 #endif

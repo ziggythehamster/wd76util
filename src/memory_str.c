@@ -7,15 +7,15 @@ char * wd76_get_bios_shadow_str() {
       break;
     
     case WD76_SHD_64KB:
-      return "64KB (0F0000h-0FFFFFh)";
+      return "64 KiB (0F0000h-0FFFFFh)";
       break;
     
     case WD76_SHD_128KB:
-      return "128KB (0E0000h-0FFFFFh)";
+      return "128 KiB (0E0000h-0FFFFFh)";
       break;
     
     case WD76_SHD_SPLIT_64KB:
-      return "64KB + 64KB (0C0000h-0CFFFFh, 0F0000h-0FFFFFh)";
+      return "64 KiB + 64 KiB (0C0000h-0CFFFFh, 0F0000h-0FFFFFh)";
       break;
     
     default:
@@ -53,15 +53,15 @@ char * wd76_get_disabled_memory_str() {
       break;
     
     case WD76_DIS_MEM_512KB:
-      return "512KB - 640KB";
+      return "512 KiB - 640 KiB";
       break;
     
     case WD76_DIS_MEM_256KB:
-      return "256KB - 640KB";
+      return "256 KiB - 640 KiB";
       break;
     
     case WD76_DIS_MEM_128KB:
-      return "128KB - 640KB";
+      return "128 KiB - 640 KiB";
       break;
     
     default:
@@ -123,19 +123,19 @@ char * wd76_get_interleave_str() {
 char * wd76_get_memory_bank_size_str(wd76_memory_bank bank) {
   switch (wd76_get_memory_bank_size(bank)) {
     case WD76_BNK_64KBIT:
-      return "64Kbit X 16 = 128 KiB";
+      return "64 Kbit X 16 = 128 KiB";
       break;
 
     case WD76_BNK_256KBIT:
-      return "256Kbit X 16 = 512 KiB";
+      return "256 Kbit X 16 = 512 KiB";
       break;
 
     case WD76_BNK_1MBIT:
-      return "1Mbit X 16 = 2 MiB";
+      return "1 Mbit X 16 = 2 MiB";
       break;
     
     case WD76_BNK_4MBIT:
-      return "4Mbit X 16 = 8 MiB";
+      return "4 Mbit X 16 = 8 MiB";
       break;
     
     default:
@@ -189,6 +189,25 @@ char * wd76_get_parity_status_str() {
   }
 }
 
+char * wd76_get_rom_type_str() {
+  switch (wd76_get_rom_type()) {
+    case WD76_ROM_TYP_128KB:
+      return "128 KiB (0E0000h-0FFFFFh)";
+      break;
+    
+    case WD76_ROM_TYP_64KB:
+      return "64 KiB (0F0000h-0FFFFFh)";
+      break;
+    
+    case WD76_ROM_TYP_SPLIT_64KB:
+      return "VBIOS + 64 KiB (0C0000h-0CxFFFh, 0F0000h-0FFFFFh)";
+      break;
+    
+    default:
+      return "Unknown";
+  }
+}
+
 char * wd76_get_split_size_str() {
   switch (wd76_get_split_size()) {
     case WD76_SPLIT_NONE:
@@ -196,15 +215,38 @@ char * wd76_get_split_size_str() {
       break;
     
     case WD76_SPLIT_256KB:
-      return "256KB - 0A0000h to 0DFFFFh";
+      return "256 KiB - 0A0000h to 0DFFFFh";
       break;
     
     case WD76_SPLIT_320KB:
-      return "320KB - 0A0000h to 0EFFFFh";
+      return "320 KiB - 0A0000h to 0EFFFFh";
       break;
     
     case WD76_SPLIT_384KB:
-      return "384KB - 0A0000h to 0FFFFFh";
+      return "384 KiB - 0A0000h to 0FFFFFh";
+      break;
+    
+    default:
+      return "Unknown";
+  }
+}
+
+char * wd76_get_video_bios_size_str() {
+  switch (wd76_get_video_bios_size()) {
+    case WD76_VB_SIZ_16KB:
+      return "16 KiB";
+      break;
+    
+    case WD76_VB_SIZ_32KB:
+      return "32 KiB";
+      break;
+    
+    case WD76_VB_SIZ_48KB:
+      return "48 KiB";
+      break;
+    
+    case WD76_VB_SIZ_64KB:
+      return "64 KiB";
       break;
     
     default:

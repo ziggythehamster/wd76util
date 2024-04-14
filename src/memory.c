@@ -12,6 +12,15 @@ wd76_bios_shadow wd76_get_bios_shadow() {
   return (wd76_bios_shadow)result;
 }
 
+// RAM shadow bit 7
+wd76_bios_shadow_extra_memory wd76_get_bios_shadow_extra_memory() {
+  if (inpw(IO_RAM_SHADOW) & 0x0200) {
+    return WD76_X_MEM_ENABLED;
+  } else {
+    return WD76_X_MEM_DISABLED;
+  }
+}
+
 // RAM shadow bit 12
 wd76_bios_shadow_write_protect wd76_get_bios_shadow_write_protect() {
   if (inpw(IO_RAM_WRITE_PROTECT) & 0x1000) {
@@ -160,6 +169,13 @@ wd76_parity_status wd76_get_parity_status() {
   }
 }
 
+// RAM shadow bits 2-3
+wd76_rom_type wd76_get_rom_type() {
+  unsigned int result = (inpw(IO_RAM_SHADOW) & 0x000C) >> 2;
+
+  return (wd76_rom_type)result;
+}
+
 // Split start bits 8-9
 wd76_split_size wd76_get_split_size() {
   unsigned int result = (inpw(IO_SPLIT_START_ADDRESS) & 0x0300) >> 8;
@@ -170,4 +186,11 @@ wd76_split_size wd76_get_split_size() {
 // Split start bits 2-7
 unsigned int wd76_get_split_start_address() {
   return (inpw(IO_SPLIT_START_ADDRESS) & 0x00FC) >> 2;
+}
+
+// RAM shadow bits 4-5
+wd76_video_bios_size wd76_get_video_bios_size() {
+  unsigned int result = (inpw(IO_RAM_SHADOW) & 0x0030);
+
+  return (wd76_video_bios_size)result;
 }
