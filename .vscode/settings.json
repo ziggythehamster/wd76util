@@ -1,0 +1,12 @@
+{
+  "cmake.configureArgs": [
+    "-DCMAKE_CXX_COMPILER_WORKS=1",
+    "-DCMAKE_C_COMPILER_WORKS=1"
+  ],
+  "cmake.configureOnOpen": true,
+  "cmake.generator": "Watcom WMake",
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "files.associations": {
+    "conio.h": "c"
+  }
+}

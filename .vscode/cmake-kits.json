@@ -1,0 +1,16 @@
+[
+  {
+    "name": "OpenWatcom v2 (16-bit DOS COM)",
+    "compilers": {
+      "C": "C:\\WATCOM\\binnt64\\wcl.exe",
+      "CXX": "C:\\WATCOM\\binnt64\\wcl.exe"
+    },
+    "preferredGenerator": {
+      "name": "Watcom WMake"
+    },
+    "cmakeSettings": {
+      "CMAKE_SYSTEM_NAME": "DOS",
+      "CMAKE_SYSTEM_PROCESSOR": "I86"
+    }
+  }
+]
