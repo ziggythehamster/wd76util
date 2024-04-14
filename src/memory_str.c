@@ -97,21 +97,6 @@ char * wd76_get_memory_bank_size_str(wd76_memory_bank bank) {
   }
 }
 
-char * wd76_get_memory_bank_status_str(wd76_memory_bank bank) {
-  switch (wd76_get_memory_bank_status(bank)) {
-    case WD76_BANK_ENABLED:
-      return "Enabled";
-      break;
-
-    case WD76_BANK_DISABLED:
-      return "Disabled";
-      break;
-    
-    default:
-      return "Unknown";
-  }
-}
-
 char * wd76_get_memory_page_mode_cas_width_str() {
   switch (wd76_get_memory_page_mode_cas_width()) {
     case WD76_PG_CAS_TWO_AND_A_HALF_CPUCLKS:

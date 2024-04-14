@@ -1,6 +1,7 @@
 #include <wd76/config.h>
 #include <wd76/lock_unlock.h>
 #include <wd76/memory_str.h>
+#include <wd76/strings.h>
 
 #include <stdio.h>
 
@@ -32,7 +33,7 @@ int main(int argc, char* argv[]){
     start_addr_dec = (long)start_addr << 16;
 
     printf("  Bank %d:\n", i);
-    printf("    Status: %s\n", wd76_get_memory_bank_status_str((wd76_memory_bank)i));
+    printf("    Status: %s\n", wd76_bool_to_enabled(wd76_get_memory_bank_status((wd76_memory_bank)i)));
     printf("    Size: %s\n", wd76_get_memory_bank_size_str((wd76_memory_bank)i));
     printf("    Start: %04X0000h (%ld)\n", start_addr, start_addr_dec);
   }
