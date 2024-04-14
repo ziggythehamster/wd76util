@@ -5,11 +5,34 @@
 
 #include <conio.h>
 
+// RAM shadow bits 8-9
+wd76_bios_shadow wd76_get_bios_shadow() {
+  unsigned int result = (inpw(IO_RAM_SHADOW) & 0x0300) >> 8;
+
+  return (wd76_bios_shadow)result;
+}
+
+// RAM shadow bit 12
+wd76_bios_shadow_write_protect wd76_get_bios_shadow_write_protect() {
+  if (inpw(IO_RAM_WRITE_PROTECT) & 0x1000) {
+    return WD76_SHD_WP_ENABLED;
+  } else {
+    return WD76_SHD_WP_DISABLED;
+  }
+}
+
 // Memory control bits 12-13
 wd76_cache_mode wd76_get_cache_mode() {
   unsigned int result = (inpw(IO_MEMORY_CONTROL) & 0x3000) >> 12;
 
   return (wd76_cache_mode)result;
+}
+
+// RAM shadow bits 14-15
+wd76_disabled_memory wd76_get_disabled_memory() {
+  unsigned int result = (inpw(IO_RAM_SHADOW) & 0xC000) >> 14;
+
+  return (wd76_disabled_memory)result;
 }
 
 // Split start bits 10-11
@@ -19,6 +42,15 @@ wd76_dram_drive wd76_get_dram_drive() {
   return (wd76_dram_drive)result;
 }
 
+// RAM shadow bit 13
+wd76_high_memory_write_protect wd76_get_high_memory_write_protect() {
+  if (inpw(IO_RAM_WRITE_PROTECT) & 0x2000) {
+    return WD76_HM_WP_ENABLED;
+  } else {
+    return WD76_HM_WP_DISABLED;
+  }
+}
+
 // Memory control bits 8-10
 wd76_interleave wd76_get_interleave() {
   unsigned int result = (inpw(IO_MEMORY_CONTROL) & 0x0700) >> 8;
@@ -26,10 +58,16 @@ wd76_interleave wd76_get_interleave() {
   return (wd76_interleave)result;
 }
 
-wd76_memory_bank_size wd76_get_memory_bank_size(wd76_memory_bank bank) {
-  /*int mask = 1 << (((int)bank * 2) + 1) | 1 << (((int)bank * 2) + 2);
-  int result = (inpw(IO_MEMORY_CONTROL) & mask) >> ((int)bank * 2) + 1;*/
+// RAM shadow bit 11
+wd76_invert_parity wd76_get_invert_parity() {
+  if (inpw(IO_RAM_SHADOW) & 0x0800) {
+    return WD76_INV_PAR_ENABLED;
+  } else {
+    return WD76_INV_PAR_DISABLED;
+  }
+}
 
+wd76_memory_bank_size wd76_get_memory_bank_size(wd76_memory_bank bank) {
   unsigned int result = inpw(IO_MEMORY_CONTROL);
   unsigned int mask;
 
@@ -58,8 +96,6 @@ wd76_memory_bank_size wd76_get_memory_bank_size(wd76_memory_bank bank) {
       return 0xFFFF;
       break;
   }
-
-  //return (wd76_memory_bank_size)result;
 }
 
 unsigned int wd76_get_memory_bank_start_address(wd76_memory_bank bank) {
@@ -97,7 +133,7 @@ wd76_memory_bank_status wd76_get_memory_bank_status(wd76_memory_bank bank) {
   }
 }
 
-// Bit 15
+// Memory control bit 15
 wd76_page_mode_cas_width wd76_get_memory_page_mode_cas_width() {
   if (inpw(IO_MEMORY_CONTROL) & 0x8000) {
     return WD76_PG_CAS_TWO_CPUCLKS;
@@ -112,6 +148,15 @@ wd76_page_mode wd76_get_page_mode() {
     return WD76_PAGE_MODE_ENABLED;
   } else {
     return WD76_PAGE_MODE_DISABLED;
+  }
+}
+
+// RAM shadow bit 10
+wd76_parity_status wd76_get_parity_status() {
+  if (inpw(IO_RAM_SHADOW) & 0x0400) {
+    return WD76_PAR_DISABLED;
+  } else {
+    return WD76_PAR_PORT061H;
   }
 }
 

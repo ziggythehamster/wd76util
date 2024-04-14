@@ -1,5 +1,28 @@
 #include "wd76/memory_str.h"
 
+char * wd76_get_bios_shadow_str() {
+  switch (wd76_get_bios_shadow()) {
+    case WD76_SHD_DISABLED:
+      return "Disabled";
+      break;
+    
+    case WD76_SHD_64KB:
+      return "64KB (0F0000h-0FFFFFh)";
+      break;
+    
+    case WD76_SHD_128KB:
+      return "128KB (0E0000h-0FFFFFh)";
+      break;
+    
+    case WD76_SHD_SPLIT_64KB:
+      return "64KB + 64KB (0C0000h-0CFFFFh, 0F0000h-0FFFFFh)";
+      break;
+    
+    default:
+      return "Unknown";
+  }
+}
+
 char * wd76_get_cache_mode_str() {
   switch (wd76_get_cache_mode()) {
     case WD76_CACHE_MODE_DISABLED:
@@ -16,6 +39,29 @@ char * wd76_get_cache_mode_str() {
     
     case WD76_CACHE_MODE_EXTERNAL_PIN51_ALT_CLOCK:
       return "External memory controller. Pin 51 = Alt Clock";
+      break;
+    
+    default:
+      return "Unknown";
+  }
+}
+
+char * wd76_get_disabled_memory_str() {
+  switch (wd76_get_disabled_memory()) {
+    case WD76_DIS_MEM_NONE:
+      return "None";
+      break;
+    
+    case WD76_DIS_MEM_512KB:
+      return "512KB - 640KB";
+      break;
+    
+    case WD76_DIS_MEM_256KB:
+      return "256KB - 640KB";
+      break;
+    
+    case WD76_DIS_MEM_128KB:
+      return "128KB - 640KB";
       break;
     
     default:
@@ -123,6 +169,21 @@ char * wd76_get_page_mode_str() {
       return "Non-Page Mode";
       break;
 
+    default:
+      return "Unknown";
+  }
+}
+
+char * wd76_get_parity_status_str() {
+  switch (wd76_get_parity_status()) {
+    case WD76_PAR_PORT061H:
+      return "Controlled by port 061h";
+      break;
+    
+    case WD76_PAR_DISABLED:
+      return "Force Disabled";
+      break;
+    
     default:
       return "Unknown";
   }
