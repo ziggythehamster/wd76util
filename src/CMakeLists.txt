@@ -3,16 +3,18 @@ set(GENERATED_HEADER_LIST
 )
 
 set(HEADER_LIST
-  "${wd76util_SOURCE_DIR}/include/wd76/io_ports.h"
-  "${wd76util_SOURCE_DIR}/include/wd76/lock_unlock.h"
-  "${wd76util_SOURCE_DIR}/include/wd76/memory.h"
-  "${wd76util_SOURCE_DIR}/include/wd76/memory_str.h"
+"${wd76util_SOURCE_DIR}/include/wd76/io_ports.h"
+"${wd76util_SOURCE_DIR}/include/wd76/lock_unlock.h"
+"${wd76util_SOURCE_DIR}/include/wd76/memory.h"
+"${wd76util_SOURCE_DIR}/include/wd76/memory_str.h"
+"${wd76util_SOURCE_DIR}/include/wd76/strings.h"
 )
 
 set(SOURCE_LIST
   "lock_unlock.c"
   "memory.c"
   "memory_str.c"
+  "strings.c"
 )
 
 configure_file(
