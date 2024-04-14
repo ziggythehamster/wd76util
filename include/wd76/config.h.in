@@ -1,0 +1,11 @@
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
+#define WD76_AUTHOR "@wd76util_AUTHOR@"
+#define WD76_DESCRIPTION "@wd76util_DESCRIPTION@"
+#define WD76_VERSION "@wd76util_VERSION@"
+#define WD76_VERSION_MAJOR @wd76util_VERSION_MAJOR@
+#define WD76_VERSION_MINOR @wd76util_VERSION_MINOR@
+#define WD76_VERSION_PATCH @wd76util_VERSION_PATCH@
+
+#endif
