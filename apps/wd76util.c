@@ -20,13 +20,21 @@ int main(int argc, char* argv[]){
   unsigned long split_start_addr_dec = (long)split_start_addr << 18;
 
   printf("Memory Configuration:\n");
+  printf("  BIOS Shadow: %s\n", wd76_get_bios_shadow_str());
   printf("  Cache Mode: %s\n", wd76_get_cache_mode_str());
+  printf("  Disabled On-Board Memory: %s\n", wd76_get_disabled_memory_str());
   printf("  DRAM Drive Strength: %s\n", wd76_get_dram_drive_str());
   printf("  Interleave: %s\n", wd76_get_interleave_str());
+  printf("  Invert Parity: %s\n", wd76_bool_to_enabled(wd76_get_invert_parity()));
   printf("  Mode: %s\n", wd76_get_page_mode_str());
   printf("  Page Mode CAS Width: %s\n", wd76_get_memory_page_mode_cas_width_str());
+  printf("  Parity Status: %s\n", wd76_get_parity_status_str());
   printf("  Split Size: %s\n", wd76_get_split_size_str());
   printf("  Split Start: %03X00000h (%ld)\n", split_start_addr, split_start_addr_dec);
+
+  printf("  Write Protects:\n");
+  printf("    BIOS Shadow: %s\n", wd76_bool_to_enabled(wd76_get_bios_shadow_write_protect()));
+  printf("    High Memory: %s\n", wd76_bool_to_enabled(wd76_get_high_memory_write_protect()));
 
   for (short i = 0; i < 4; i++) {
     start_addr = wd76_get_memory_bank_start_address((wd76_memory_bank)i);
