@@ -2,6 +2,7 @@
   {
     "name": "OpenWatcom v2 (16-bit DOS COM)",
     "compilers": {
+      "ASM": "C:\\WATCOM\\binnt64\\wcl.exe",
       "C": "C:\\WATCOM\\binnt64\\wcl.exe",
       "CXX": "C:\\WATCOM\\binnt64\\wcl.exe"
     },
