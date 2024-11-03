@@ -43,7 +43,12 @@ configure_file(
 )
 
 add_library(wd76 ${SOURCE_LIST} ${HEADER_LIST} ${GENERATED_HEADER_LIST})
-target_compile_options(wd76 PUBLIC -bt=dos -ms -zm)
+
+# -bt=dos   build target = DOS
+# -mt       tiny model
+# -zm       place each function into separate segment
+# -ze       enable language extensions
+target_compile_options(wd76 PUBLIC -bt=dos -mt -zm -ze)
 
 target_include_directories(wd76 PUBLIC
   "${wd76util_SOURCE_DIR}/include"
