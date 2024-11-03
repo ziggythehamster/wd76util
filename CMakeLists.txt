@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 project(wd76util
   VERSION 0.1.0
   DESCRIPTION "Provides low-level inspection/control over WD76C10 chipsets"
-  LANGUAGES C
+  LANGUAGES C ASM
 )
 
 set(wd76util_AUTHOR "ZiggyTheHamster")
