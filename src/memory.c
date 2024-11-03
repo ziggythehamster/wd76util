@@ -5,6 +5,11 @@
 
 #include <conio.h>
 
+#pragma aux internal_wd76_set_memory_size_with_reboot \
+  parm [bx] \
+  modify [ax bx cx dx di es si] \
+  aborts
+
 // RAM shadow bits 8-9
 wd76_bios_shadow wd76_get_bios_shadow() {
   unsigned int result = (inpw(IO_RAM_SHADOW) & 0x0300) >> 8;
@@ -183,7 +188,6 @@ wd76_split_size wd76_get_split_size() {
   return (wd76_split_size)result;
 }
 
-// Split start bits 2-7
 unsigned int wd76_get_split_start_address() {
   return (inpw(IO_SPLIT_START_ADDRESS) & 0x00FC) >> 2;
 }
@@ -193,4 +197,97 @@ wd76_video_bios_size wd76_get_video_bios_size() {
   unsigned int result = (inpw(IO_RAM_SHADOW) & 0x0030);
 
   return (wd76_video_bios_size)result;
+}
+
+unsigned int wd76_set_memory_bank_start_address(wd76_memory_bank bank, unsigned long address) {
+  // validate the passed argument
+  if (address < (1L << 17L) || address > ((1L << 24L) | (1L << 23L) | (1L << 22L) | (1L << 21L) | (1L << 20L) | (1L << 19L) | (1L << 18L) | (1L << 17L))) {
+    return 1;
+  } else {
+    unsigned int old_value = 0;
+    unsigned int old_value_masked = 0;
+
+    switch (bank) {
+      case WD76_BANK0:
+        old_value = inpw(IO_BANK01_START_ADDRESS);
+        old_value_masked = old_value & 0xFF00;
+
+        outpw(IO_BANK01_START_ADDRESS, old_value_masked | (address >> 17L));
+
+        return 0;
+        break;
+      
+      case WD76_BANK1:
+        old_value = inpw(IO_BANK01_START_ADDRESS);
+        old_value_masked = old_value & 0x00FF;
+
+        outpw(IO_BANK01_START_ADDRESS, old_value_masked | ((address >> 17L) << 8));
+
+        return 0;
+        break;
+      
+      case WD76_BANK2:
+        old_value = inpw(IO_BANK23_START_ADDRESS);
+        old_value_masked = old_value & 0xFF00;
+
+        outpw(IO_BANK23_START_ADDRESS, old_value_masked | (address >> 17L));
+
+        return 0;
+        break;
+      
+      case WD76_BANK3:
+        old_value = inpw(IO_BANK23_START_ADDRESS);
+        old_value_masked = old_value & 0x00FF;
+
+        outpw(IO_BANK23_START_ADDRESS, old_value_masked | ((address >> 17L) << 8));
+
+        return 0;
+        break;
+
+      default:
+        return 1;
+        break;
+    }
+  }
+}
+
+unsigned int wd76_set_memory_size_with_reboot(wd76_memory_bank_size bank0, wd76_memory_bank_size bank1, wd76_memory_bank_size bank2, wd76_memory_bank_size bank3) {
+  // validate the arguments
+  if (bank0 < 0 || bank0 > 3 || bank1 < 0 || bank1 > 3 || bank2 < 0 || bank2 > 3 || bank3 < 0 || bank3 > 3) {
+    return 1;
+  } else {
+    unsigned int old_reg = inpw(IO_MEMORY_CONTROL);
+    unsigned int old_reg_masked = old_reg & 0xFF00;
+    unsigned int new_size = (unsigned int)bank0 | ((unsigned int)bank1 << 2) | ((unsigned int)bank2 << 4) | ((unsigned int)bank3 << 6);
+    unsigned int new_reg = old_reg_masked | new_size;
+
+    /*
+      when setting the memory size bits in the memory control register (3872h),
+      the effect is immediate, which causes the memory to be mapped to totally
+      different locations than before. this is no good if we want to keep running
+      code, so we have to copy the code we want to run to VRAM and then execute it
+      from there. VRAM never gets relocated within the memory map, so this works.
+
+      after setting up the new RAM size, we have to reshadow the BIOSes
+    */
+
+    internal_wd76_set_memory_size_with_reboot(new_reg);
+
+    return 0; // technically this is impossible to reach
+  }
+}
+
+// Split start bits 2-7 - A19 through A24
+unsigned int wd76_set_split_start_address(unsigned long address) {
+  // validate the passed argument
+  if (address < (1L << 19L) || address > ((1L << 24L) | (1L << 23L) | (1L << 22L) | (1L << 21L) | (1L << 20L) | (1L << 19L))) {
+    return 1;
+  } else {
+    unsigned int old_value = inpw(IO_SPLIT_START_ADDRESS);
+    unsigned int old_value_masked = old_value & 0xFF03; // zero the bits we're setting
+
+    outpw(IO_SPLIT_START_ADDRESS, old_value_masked | ((address >> 19L) << 2));
+
+    return 0;
+  }
 }
