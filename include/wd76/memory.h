@@ -151,4 +151,10 @@ wd76_split_size wd76_get_split_size();
 unsigned int wd76_get_split_start_address();
 wd76_video_bios_size wd76_get_video_bios_size();
 
+unsigned int wd76_set_memory_bank_start_address(wd76_memory_bank bank, unsigned long address);
+unsigned int wd76_set_memory_size_with_reboot(wd76_memory_bank_size bank0, wd76_memory_bank_size bank1, wd76_memory_bank_size bank2, wd76_memory_bank_size bank3);
+unsigned int wd76_set_split_start_address(unsigned long address);
+
+extern void internal_wd76_set_memory_size_with_reboot(unsigned int size);
+
 #endif
