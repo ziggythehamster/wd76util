@@ -31,6 +31,7 @@ set(HEADER_LIST
 )
 
 set(SOURCE_LIST
+  "internal_wd76_set_memory_size_with_reboot.asm"
   "lock_unlock.c"
   "memory.c"
   "memory_str.c"
