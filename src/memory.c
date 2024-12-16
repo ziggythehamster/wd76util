@@ -1,9 +1,10 @@
 #include "wd76/memory.h"
 
-#include "wd76/lock_unlock.h"
 #include "wd76/io_ports.h"
+#include "wd76/lock_unlock.h"
 
 #include <conio.h>
+#include <limits.h>
 
 #pragma aux internal_wd76_set_memory_size_with_reboot \
   parm [bx] \
@@ -82,28 +83,21 @@ wd76_invert_parity wd76_get_invert_parity() {
 }
 
 wd76_memory_bank_size wd76_get_memory_bank_size(wd76_memory_bank bank) {
-  unsigned int result = inpw(IO_MEMORY_CONTROL);
-  unsigned int mask;
-
   switch (bank) {
     case WD76_BANK0:
-      mask = 0x0003;
-      return (result & mask);
+      return (wd76_memory_bank_size)(inpw(IO_MEMORY_CONTROL) & 0x0003);
       break;
     
     case WD76_BANK1:
-      mask = 0x000C;
-      return (result & mask) >> 2;
+      return (wd76_memory_bank_size)((inpw(IO_MEMORY_CONTROL) & 0x000C) >> 2);
       break;
     
     case WD76_BANK2:
-      mask = 0x0030;
-      return (result & mask) >> 4;
+      return (wd76_memory_bank_size)((inpw(IO_MEMORY_CONTROL) & 0x0030) >> 4);
       break;
     
     case WD76_BANK3:
-      mask = 0x00C0;
-      return (result & mask) >> 6;
+      return (wd76_memory_bank_size)((inpw(IO_MEMORY_CONTROL) & 0x00C0) >> 6);
       break;
     
     default:
@@ -119,25 +113,26 @@ wd76_memory_bank_size wd76_get_memory_bank_size(wd76_memory_bank bank) {
  * @return The memory address where the specified memory bank starts,
  *         or `ULONG_MAX` if an invalid memory bank is provided.
  */
+unsigned long wd76_get_memory_bank_start_address(wd76_memory_bank bank) {
   switch (bank) {
     case WD76_BANK0:
-      return inpw(IO_BANK01_START_ADDRESS) & 0x00FF;
+      return (unsigned long)(inpw(IO_BANK01_START_ADDRESS) & 0x00FF) << 17L;
       break;
     
     case WD76_BANK1:
-      return (inpw(IO_BANK01_START_ADDRESS) & 0xFF00) >> 8;
+      return (unsigned long)((inpw(IO_BANK01_START_ADDRESS) & 0xFF00) >> 8) << 17L;
       break;
     
     case WD76_BANK2:
-      return inpw(IO_BANK23_START_ADDRESS) & 0x00FF;
+      return (unsigned long)(inpw(IO_BANK23_START_ADDRESS) & 0x00FF) << 17L;
       break;
     
     case WD76_BANK3:
-      return (inpw(IO_BANK23_START_ADDRESS) & 0xFF00) >> 8;
+      return (unsigned long)((inpw(IO_BANK23_START_ADDRESS) & 0xFF00) >> 8) << 17L;
       break;
 
     default:
-      return 0xFFFF;
+      return ULONG_MAX;
       break;
   }
 }
@@ -205,6 +200,8 @@ wd76_split_size wd76_get_split_size() {
  * 
  * @return The starting address of the relocated memory split
  */
+unsigned long wd76_get_split_start_address() {
+  return (unsigned long)((inpw(IO_SPLIT_START_ADDRESS) & 0x00FC) >> 2) << 19L;
 }
 
 // RAM shadow bits 4-5
@@ -251,42 +248,27 @@ unsigned int wd76_set_memory_bank_start_address(wd76_memory_bank bank, unsigned 
   if (address < (1L << 17L) || address > ((1L << 24L) | (1L << 23L) | (1L << 22L) | (1L << 21L) | (1L << 20L) | (1L << 19L) | (1L << 18L) | (1L << 17L))) {
     return 1;
   } else {
-    unsigned int old_value = 0;
-    unsigned int old_value_masked = 0;
-
     switch (bank) {
       case WD76_BANK0:
-        old_value = inpw(IO_BANK01_START_ADDRESS);
-        old_value_masked = old_value & 0xFF00;
-
-        outpw(IO_BANK01_START_ADDRESS, old_value_masked | (address >> 17L));
+        outpw(IO_BANK01_START_ADDRESS, (inpw(IO_BANK01_START_ADDRESS) & 0xFF00) | (address >> 17L));
 
         return 0;
         break;
       
       case WD76_BANK1:
-        old_value = inpw(IO_BANK01_START_ADDRESS);
-        old_value_masked = old_value & 0x00FF;
-
-        outpw(IO_BANK01_START_ADDRESS, old_value_masked | ((address >> 17L) << 8));
+        outpw(IO_BANK01_START_ADDRESS, (inpw(IO_BANK01_START_ADDRESS) & 0x00FF) | ((address >> 17L) << 8));
 
         return 0;
         break;
       
       case WD76_BANK2:
-        old_value = inpw(IO_BANK23_START_ADDRESS);
-        old_value_masked = old_value & 0xFF00;
-
-        outpw(IO_BANK23_START_ADDRESS, old_value_masked | (address >> 17L));
+        outpw(IO_BANK23_START_ADDRESS, (inpw(IO_BANK23_START_ADDRESS) & 0xFF00) | (address >> 17L));
 
         return 0;
         break;
       
       case WD76_BANK3:
-        old_value = inpw(IO_BANK23_START_ADDRESS);
-        old_value_masked = old_value & 0x00FF;
-
-        outpw(IO_BANK23_START_ADDRESS, old_value_masked | ((address >> 17L) << 8));
+        outpw(IO_BANK23_START_ADDRESS, (inpw(IO_BANK23_START_ADDRESS) & 0x00FF) | ((address >> 17L) << 8));
 
         return 0;
         break;
@@ -333,16 +315,6 @@ unsigned int wd76_set_memory_size_with_reboot(wd76_memory_bank_size bank0, wd76_
     unsigned int new_size = (unsigned int)bank0 | ((unsigned int)bank1 << 2) | ((unsigned int)bank2 << 4) | ((unsigned int)bank3 << 6);
     unsigned int new_reg = old_reg_masked | new_size;
 
-    /*
-      when setting the memory size bits in the memory control register (3872h),
-      the effect is immediate, which causes the memory to be mapped to totally
-      different locations than before. this is no good if we want to keep running
-      code, so we have to copy the code we want to run to VRAM and then execute it
-      from there. VRAM never gets relocated within the memory map, so this works.
-
-      after setting up the new RAM size, we have to reshadow the BIOSes
-    */
-
     internal_wd76_set_memory_size_with_reboot(new_reg);
 
     return 0; // technically this is impossible to reach
@@ -363,10 +335,8 @@ unsigned int wd76_set_split_start_address(unsigned long address) {
   if (address < (1L << 19L) || address > ((1L << 24L) | (1L << 23L) | (1L << 22L) | (1L << 21L) | (1L << 20L) | (1L << 19L))) {
     return 1;
   } else {
-    unsigned int old_value = inpw(IO_SPLIT_START_ADDRESS);
-    unsigned int old_value_masked = old_value & 0xFF03; // zero the bits we're setting
-
-    outpw(IO_SPLIT_START_ADDRESS, old_value_masked | ((address >> 19L) << 2));
+    // the mask zeroes the bits we're setting
+    outpw(IO_SPLIT_START_ADDRESS, (inpw(IO_SPLIT_START_ADDRESS) & 0xFF03) | ((address >> 19L) << 2));
 
     return 0;
   }

@@ -141,14 +141,14 @@ wd76_high_memory_write_protect wd76_get_high_memory_write_protect();
 wd76_interleave wd76_get_interleave();
 wd76_invert_parity wd76_get_invert_parity();
 wd76_memory_bank_size wd76_get_memory_bank_size(wd76_memory_bank bank);
-unsigned int wd76_get_memory_bank_start_address(wd76_memory_bank bank);
+unsigned long wd76_get_memory_bank_start_address(wd76_memory_bank bank);
 wd76_memory_bank_status wd76_get_memory_bank_status(wd76_memory_bank bank);
 wd76_page_mode_cas_width wd76_get_memory_page_mode_cas_width();
 wd76_page_mode wd76_get_page_mode();
 wd76_parity_status wd76_get_parity_status();
 wd76_rom_type wd76_get_rom_type();
 wd76_split_size wd76_get_split_size();
-unsigned int wd76_get_split_start_address();
+unsigned long wd76_get_split_start_address();
 wd76_video_bios_size wd76_get_video_bios_size();
 
 unsigned int wd76_set_memory_bank_start_address(wd76_memory_bank bank, unsigned long address);
