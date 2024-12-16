@@ -11,9 +11,17 @@ if(CMAKE_C_COMPILER_ID STREQUAL "OpenWatcom")
 
   add_dependencies(wd76util tera8m)
 
-  # Use the tiny memory model
-  target_compile_options(tera8m PUBLIC -bt=dos -mt -zm)
-  target_compile_options(wd76util PUBLIC -bt=dos -mt -zm)
+  # -0        8088/8086
+  # -bt=dos   build target = DOS
+  # -mt       tiny model
+  # -oi       inline certain library functions
+  # -os       space is favoured over time when generating code
+  # -s        disable stack overflow checks
+  # -zcm      assembly compatibility mode (watcom, masm, tasm)
+  # -zm       place each function into separate segment
+  # -ze       enable language extensions
+  target_compile_options(tera8m PUBLIC -bt=dos -mt -ze -s -0 -os -oi)
+  target_compile_options(wd76util PUBLIC -bt=dos -mt -zm -ze)
 
   # We want to build a .com
   set_target_properties(
