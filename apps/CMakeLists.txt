@@ -4,7 +4,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "OpenWatcom")
   string(REPLACE "system dos" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
   string(REPLACE "system dos" "" CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}")
 
-  add_executable(tera8m tera8m.c)
+  add_executable(tera8m tera8m_sys.asm tera8m.c)
   add_executable(wd76util wd76util.c)
   target_link_libraries(tera8m PRIVATE wd76)
   target_link_libraries(wd76util PRIVATE wd76)
@@ -23,12 +23,12 @@ if(CMAKE_C_COMPILER_ID STREQUAL "OpenWatcom")
   target_compile_options(tera8m PUBLIC -bt=dos -mt -ze -s -0 -os -oi)
   target_compile_options(wd76util PUBLIC -bt=dos -mt -zm -ze)
 
-  # We want to build a .com
+  # We want to build a .sys
   set_target_properties(
     tera8m
     PROPERTIES
-      LINK_FLAGS "system com option eliminate" # NB: LINK_OPTIONS gets quoted and doesn't work
-      SUFFIX     ".com"
+      LINK_FLAGS "system dos output raw order clname HEADER clname DATA clname STACK clname BSS clname CODE option showdead, stack=1024, statics" # NB: LINK_OPTIONS gets quoted and doesn't work
+      SUFFIX     ".sys"
   )
 
   # We want to build a .com
