@@ -10,6 +10,8 @@
       "name": "Watcom WMake"
     },
     "cmakeSettings": {
+      "CMAKE_ASM_COMPILER_ID": "OpenWatcom",
+      "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
       "CMAKE_SYSTEM_NAME": "DOS",
       "CMAKE_SYSTEM_PROCESSOR": "I86"
     }
