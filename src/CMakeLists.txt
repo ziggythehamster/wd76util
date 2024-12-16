@@ -45,11 +45,15 @@ configure_file(
 
 add_library(wd76 ${SOURCE_LIST} ${HEADER_LIST} ${GENERATED_HEADER_LIST})
 
+# -0        8086 only code
 # -bt=dos   build target = DOS
 # -mt       tiny model
+# -oi       inline certain library functions
+# -os       space is favoured over time when generating code
+# -s        disable stack overflow checks
 # -zm       place each function into separate segment
 # -ze       enable language extensions
-target_compile_options(wd76 PUBLIC -bt=dos -mt -zm -ze)
+target_compile_options(wd76 PUBLIC -0 -bt=dos -mt -s -ze -zm -oi -os)
 
 target_include_directories(wd76 PUBLIC
   "${wd76util_SOURCE_DIR}/include"
