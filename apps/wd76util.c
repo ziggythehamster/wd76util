@@ -16,7 +16,7 @@ int main(int argc, char* argv[]){
   // unlock registers
   wd76_unlock();
 
-  unsigned long split_start_addr = (unsigned long)wd76_get_split_start_address() << 19L;
+  unsigned long split_start_addr = wd76_get_split_start_address();
 
   printf("Memory Configuration:\n");
   printf("  BIOS Shadow: %s\n", wd76_get_bios_shadow_str());
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
   printf("    High Memory: %s\n", wd76_bool_to_enabled(wd76_get_high_memory_write_protect()));
 
   for (short i = 0; i < 4; i++) {
-    start_addr = (unsigned long)wd76_get_memory_bank_start_address((wd76_memory_bank)i) << 17L;
+    start_addr = wd76_get_memory_bank_start_address((wd76_memory_bank)i);
 
     printf("  Bank %d:\n", i);
     printf("    Status: %s\n", wd76_bool_to_enabled(wd76_get_memory_bank_status((wd76_memory_bank)i)));
