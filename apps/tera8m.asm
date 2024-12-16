@@ -2,6 +2,8 @@
 .model small
 
 include dosapi.inc
+includelib clibs.lib
+includelib wd76.lib
 
 ;
 ; macros
@@ -16,24 +18,6 @@ outp          macro port, data
               mov al, data
               mov dx, port
               out dx, al
-              endm
-
-print         macro string
-              mov dx, ds:[offset string]
-              mov ax, 0x0900
-              int 0x21
-              endm
-
-print_convmem macro
-              print _dbg_convmem
-              int 0x12
-              print_hexasc
-              endm
-
-print_hexasc  macro
-              mov bx, offset _hexasc_addr
-              call hexasc
-              print _hexasc_addr
               endm
 
 restoreregs   macro
@@ -202,7 +186,6 @@ _TEXT         segment word public 'CODE'
               public _msg_banner
               public _msg_cfg_now
               public _msg_cfg_ok
-              public _msg_hooked
 
 _rhdr_ptr     dword ?             ; pointer to request header, set by strategy routine
 _orig_stack   dword ?             ; the original SP:SS from when our interrupt is called
@@ -216,8 +199,6 @@ _bank2_size   byte  WD76_BNK_64K  ; the bank2 size we want
 _bank2_start  dword ?             ; the bank2 start we want
 _bank3_size   byte  WD76_BNK_64K  ; the bank3 size we want
 _bank3_start  dword ?             ; the bank3 start we want
-
-_dbg_convmem  byte "int12 conventional memory: $"
 
 dispatch_table:
               dw dev_init           ; 0 - init
@@ -309,7 +290,7 @@ dev_error     endp
 ; dev_init - driver is being initialized
 ;
 dev_init      proc near
-              print _msg_banner
+              display _msg_banner
 
               cli
               call wd76_unlock_   ; unlock registers
@@ -366,11 +347,11 @@ dev_init      proc near
               cmp ax, bx                                           ; 
               jne needs_configured                                 ; bank 1 should be 4MBit
 
-              print _msg_cfg_ok
+              display _msg_cfg_ok
               jmp init_done
 
 needs_configured:
-              print _msg_cfg_now
+              display _msg_cfg_now
 
               ; set the split start address
 
@@ -415,7 +396,7 @@ needs_configured:
               hlt                                      ; we should have rebooted anyways
 
 cfg_failure:
-              print _msg_cfg_fail
+              display _msg_cfg_fail
 
 init_done:
               ;
@@ -438,8 +419,6 @@ init_done:
               set_vector 0x15, int15_handler
 
               sti
-
-              display _msg_hooked
 
               ;
               ; brick init command in case driver re-executed
@@ -478,9 +457,6 @@ _msg_cfg_now  db "Reconfiguring WD76C10 and rebooting..."
 _msg_cfg_ok   db "WD76C10 successfully configured!"
               db CRLF
               db "$"
-_msg_hooked   db "INT15h/AH=88h hooked!"
-              db CRLF
-              db "$"
 
 ; variables used in this procedure
 
@@ -491,40 +467,6 @@ size_bank1    byte  ?
 
 dev_init      endp
 
-hexasc        proc near
-              push cx
-              push dx
-
-              mov dx, 4
-
-hexasc1:
-              mov cx, 4
-              rol ax, cl
-              mov cx, ax
-              and cx, 0x0F
-              add cx, '0'
-              cmp cx, '9'
-              jbe hexasc2
-              add cx, 'A'-'9'-1
-
-hexasc2:
-              mov [bx], cl
-              inc bx
-
-              dec dx
-              jnz hexasc1
-
-              pop dx
-              pop cx
-              ret
-
-_hexasc_addr  db "XXXX"
-              db CRLF
-              db "$"
-
-hexasc        endp
-
-eof:
 dev_interrupt endp
 
 _TEXT         ends

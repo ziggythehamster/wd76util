@@ -4,7 +4,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "OpenWatcom")
   string(REPLACE "system dos" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
   string(REPLACE "system dos" "" CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}")
 
-  add_executable(tera8m tera8m_sys.asm tera8m.c)
+  add_executable(tera8m tera8m.asm tera8m.c)
   add_executable(wd76util wd76util.c)
   target_link_libraries(tera8m PRIVATE wd76)
   target_link_libraries(wd76util PRIVATE wd76)
