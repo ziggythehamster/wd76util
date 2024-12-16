@@ -1,53 +1,83 @@
 #include <wd76/lock_unlock.h>
 #include <wd76/memory.h>
+#include <wd76/util.h>
 
 #include <conio.h>
 #include <dos.h>
+#include <i86.h>
 #include <stdio.h>
-#include <string.h>
 
-#define SPLIT_START_ADDR 0x44 // A23=1, A19=1
-#define SPLIT_START_MASK 0xFF00 // high byte needs left alone
-#define START_ADDR 0x0040 // A23=1 for bank0, bank1=0
+#pragma data_seg("_CODE")
 
-unsigned int get_extended_size();
-#pragma aux get_extended_size = \
-  "mov ax, 0x8800" \
-  "int 0x15" \
-  value [ax];
+// this is to work around VSCode shenanigans
+#ifdef __WATCOMC__
+#define INTERRUPT_FUNCTION void interrupt far
+#define INTERRUPT_POINTER(name) void(interrupt far *name)()
+#else
+#define INTERRUPT_FUNCTION void
+#define INTERRUPT_POINTER(name) void (*name)()
+#endif
+
+#define EXTENDED_MEMORY_SIZE (256 /* memory split */ + 512 /* on-board memory */ + 7168 /* 8 MiB - 1 MiB */)
+#define SPLIT_START_ADDR 0x00880000 // 8912896 bytes (8388608 + 524288)
+#define BANK0_START_ADDR 0x00800000 // 8388608 bytes (note the Tera Drive's onboard RAM is 512KiB)
+
+static unsigned long start_bank0;
+static unsigned long split_start;
+static wd76_memory_bank_size size_bank0 = WD76_BNK_UNKNOWN;
+static wd76_memory_bank_size size_bank1 = WD76_BNK_UNKNOWN;
+static wd76_memory_bank_size size_bank2 = WD76_BNK_64KBIT; // not present on this hw
+static wd76_memory_bank_size size_bank3 = WD76_BNK_64KBIT; // not present on this hw
+
+extern INTERRUPT_POINTER(orig_int15h);
+
+extern char * msg_banner;
+extern char * msg_cfg_now;
+extern char * msg_cfg_ok;
+extern char * msg_hooked;
+
+// void print(const char *);
+// #pragma aux print = \
+//   "mov ax, 0x0900" \
+//   "int 0x21" \
+//   parm caller [dx] \
+//   modify [ax di es];
+
+// INTERRUPT_FUNCTION int15h(union REGPACK r) {
+//   if (r.h.ah == 0x88) {
+//     r.w.ax = EXTENDED_MEMORY_SIZE;
+//   } else {
+//     _chain_intr(orig_int15h);
+//   }
+// }
+
+// #pragma aux dev_init value [ax];
+// int dev_init() {
+//   size_bank0 = wd76_get_memory_bank_size(WD76_BANK0);
+//   size_bank1 = wd76_get_memory_bank_size(WD76_BANK1);
+
+//   start_bank0 = wd76_get_memory_bank_start_address(WD76_BANK0);
+
+//   split_start = wd76_get_split_start_address();
+
+//   if (size_bank1 == WD76_BNK_4MBIT && start_bank0 == BANK0_START_ADDR && split_start == SPLIT_START_ADDR) {
+//     print(msg_cfg_ok);
+
+//     // orig_int15h = _dos_getvect(0x15);
+//     // _dos_setvect(0x15, int15h);
+
+//     // print(hooked);
+//   } else {
+//     print(msg_cfg_now);
+
+//     wd76_set_split_start_address(SPLIT_START_ADDR);
+//     wd76_set_memory_bank_start_address(WD76_BANK0, BANK0_START_ADDR);
+//     wd76_set_memory_size_with_reboot(WD76_BNK_256KBIT, WD76_BNK_4MBIT, WD76_BNK_64KBIT, WD76_BNK_64KBIT);
+//   }
+
+//   return 0;
+// }
 
 int main(int argc, char* argv[]) {
-  printf("TERA8M init\n");
-
-  printf("Extended memory size: %d\n", get_extended_size());
-
-  printf("Determining new register values ...\n");
-
-  // unlock registers
-  wd76_unlock();
-
-  unsigned int orig_start = inpw(0x4872);
-  unsigned int orig_split = inpw(0x5872);
-  unsigned int new_start = START_ADDR;
-  unsigned int new_split = (orig_split & SPLIT_START_MASK) | SPLIT_START_ADDR;
-
-  wd76_memory_bank_size bank0 = wd76_get_memory_bank_size(WD76_BANK0);
-  wd76_memory_bank_size bank1 = WD76_BNK_4MBIT;
-  wd76_memory_bank_size bank2 = wd76_get_memory_bank_size(WD76_BANK2);
-  wd76_memory_bank_size bank3 = wd76_get_memory_bank_size(WD76_BANK3);
-
-  printf("0 = %04X  1 = %04X  2 = %04X  3 = %04X\n", bank0, bank1, bank2, bank3);
-
-  printf("4872h %04X => %04X\n", orig_start, new_start);
-  printf("5872h %04X => %04X\n", orig_split, new_split);
-
-  getch(); // wait for a key
-
-  printf("Running ...\n");
-
-  outpw(0x5872, new_split);
-  outpw(0x4872, new_start);
-
-  // set size
-  wd76_set_memory_size_with_reboot(bank0, bank1, bank2, bank3);
+  //dev_init();
 }
