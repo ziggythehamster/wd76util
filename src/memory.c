@@ -112,7 +112,13 @@ wd76_memory_bank_size wd76_get_memory_bank_size(wd76_memory_bank bank) {
   }
 }
 
-unsigned int wd76_get_memory_bank_start_address(wd76_memory_bank bank) {
+/**
+ * Gets the start address of the specified memory bank.
+ * 
+ * @param[in] bank The memory bank to get the start address of
+ * @return The memory address where the specified memory bank starts,
+ *         or `ULONG_MAX` if an invalid memory bank is provided.
+ */
   switch (bank) {
     case WD76_BANK0:
       return inpw(IO_BANK01_START_ADDRESS) & 0x00FF;
@@ -188,8 +194,17 @@ wd76_split_size wd76_get_split_size() {
   return (wd76_split_size)result;
 }
 
-unsigned int wd76_get_split_start_address() {
-  return (inpw(IO_SPLIT_START_ADDRESS) & 0x00FC) >> 2;
+/**
+ * Gets the starting address of the relocated memory split.
+ * 
+ * The WD76C10 has the capability of moving the block of memory from 0A0000h to
+ * 0FFFFFh (or a smaller range; the Sega Tera Drive moves 0A0000h-0DFFFFh only)
+ * to a different location in the memory map, allowing memory-mapped I/O to
+ * exist without consuming memory. This memory should be moved to be beyond the
+ * extent of physical memory.
+ * 
+ * @return The starting address of the relocated memory split
+ */
 }
 
 // RAM shadow bits 4-5
@@ -199,6 +214,38 @@ wd76_video_bios_size wd76_get_video_bios_size() {
   return (wd76_video_bios_size)result;
 }
 
+/**
+ * Sets the start address of the specified memory bank.
+ * 
+ * From the WD76C10A (1992) datasheet:
+ * 
+ * The starting address of the bank must be
+ * programmed on boundaries corresponding to the
+ * bank size. Smaller banks must be placed at a
+ * higher starting address than larger banks. The size
+ * of the bank is automatically set by the type and size
+ * of the RAM. When banks are interleaved, in either
+ * page or non-page mode, the interleaved banks
+ * should be enabled and programmed to the same
+ * starting address.
+ *
+ * The bank size is doubled for two-way interleave and
+ * quadrupled for four-way interleave. For example, if
+ * bank 0 has 256 Kbit DRAMs and banks 2 and 3
+ * have 1 Mbit DRAMs, the starting address for
+ * banks 2 and 3 should be zero. Both banks should
+ * be enabled. The size of the combined banks is 4
+ * Mbytes, double the size of the individual banks.
+ * The starting address for bank 0 should then be at
+ * 4 Mbytes. For three banks of the same size, in
+ * which two are interleaved, the two interleaved
+ * banks must be placed at a lower starting address
+ * than the third bank.
+ * 
+ * @param[in] bank    The memory bank to set the starting address of
+ * @param[in] address The starting address of the memory bank
+ * @return 0 on success, 1 if the address is not valid
+ */
 unsigned int wd76_set_memory_bank_start_address(wd76_memory_bank bank, unsigned long address) {
   // validate the passed argument
   if (address < (1L << 17L) || address > ((1L << 24L) | (1L << 23L) | (1L << 22L) | (1L << 21L) | (1L << 20L) | (1L << 19L) | (1L << 18L) | (1L << 17L))) {
@@ -251,6 +298,31 @@ unsigned int wd76_set_memory_bank_start_address(wd76_memory_bank bank, unsigned 
   }
 }
 
+/**
+ * Sets the memory size of all memory banks and then reboots using the 8042.
+ * 
+ * This function does some particularly crazy things. On a WD76C10 system, the
+ * BIOS normally sets the memory bank size before shadowing the BIOS. The BIOS
+ * does this because setting the bank size causes physical memory to be jumbled.
+ * We're in whatever the DOS equivalent of userspace is when this function is
+ * executed, so we have to assume the worst (and at least on the Sega Tera Drive,
+ * the BIOS sets the memory up in a maximally annoying way). This function will
+ * therefore have to execute from some place where it can't be jumbled when the
+ * memory size changes, and then re-shadow the VGA and system BIOSes. That place?
+ * Video memory! Yes, this function will copy part of itself (implemented in
+ * assembly) to video memory and then do a far jump over to the code and execute
+ * it straight from video memory. It is impossible to return back to DOS after
+ * this, because DOS is not located in the same place in memory anymore, so at
+ * the very end, we reboot. This reboot is triggered using the 8042 keyboard
+ * controller so that the CPU re-initializes itself.
+ * 
+ * @param[in] bank0 The size of the first memory bank
+ * @param[in] bank1 The size of the second memory bank
+ * @param[in] bank2 The size of the third memory bank
+ * @param[in] bank3 The size of the fourth memory bank
+ * @retval 0 when successful, but this can never actually happen due to the reboot
+ * @retval 1 when one or more banks have an invalid size
+ */
 unsigned int wd76_set_memory_size_with_reboot(wd76_memory_bank_size bank0, wd76_memory_bank_size bank1, wd76_memory_bank_size bank2, wd76_memory_bank_size bank3) {
   // validate the arguments
   if (bank0 < 0 || bank0 > 3 || bank1 < 0 || bank1 > 3 || bank2 < 0 || bank2 > 3 || bank3 < 0 || bank3 > 3) {
@@ -277,7 +349,15 @@ unsigned int wd76_set_memory_size_with_reboot(wd76_memory_bank_size bank0, wd76_
   }
 }
 
-// Split start bits 2-7 - A19 through A24
+/**
+ * Sets the starting address of the relocated memory from the memory split.
+ * 
+ * The address that the memory is moved to should be right after the last
+ * byte of physical memory, otherwise relocating the split is pointless.
+ * 
+ * @param[in] address The address to move the split start to.
+ * @return 0 on success, 1 if the address specified is not valid
+ */
 unsigned int wd76_set_split_start_address(unsigned long address) {
   // validate the passed argument
   if (address < (1L << 19L) || address > ((1L << 24L) | (1L << 23L) | (1L << 22L) | (1L << 21L) | (1L << 20L) | (1L << 19L))) {
