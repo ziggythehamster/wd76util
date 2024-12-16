@@ -1,6 +1,10 @@
 .8086
 .model tiny
 
+;
+; macros
+;
+
 inp           macro port
               mov dx, port
               in al, dx
@@ -74,6 +78,12 @@ wd76_unlock   macro
               outp 0xf073, 0xda   ; unlock registers
               endm
 
+;
+; equates
+;
+
+VRAM_BUFFERS  equ 0x0100 ; how many bytes of buffers we have
+
 .code
 
 ;
@@ -84,30 +94,38 @@ wd76_unlock   macro
 
 public internal_wd76_set_memory_size_with_reboot_
 internal_wd76_set_memory_size_with_reboot_ proc near
-              setds cs            ; set DS=CS
-              setes 0xB800        ; set ES=B800
-              mov ax, 0x0500
-              mov di, ax          ; set ES:DI=B800:0500
+              setds cs                 ; set DS=CS
+              setes 0xB900             ; set ES=B900
 
-              lea si, [setsize_vram] ; the start of the data to copy
+              lea si, [setsize_vram]   ; the start of the data to copy
 
               mov ax, end_setsize_code ;
               sub ax, setsize_vram     ; set ax to number of bytes to copy
 
-              shr ax, 1           ;
-              mov cx, ax          ; setup copy
+              shr ax, 1                ;
+              mov cx, ax               ; setup copy
 
-              rep movsw           ; perform copy
+              rep movsw                ; perform copy
 
-              setds 0xB800        ; set DS=B800
+              setds 0xB900             ; set DS=B900
+              setes 0xB900             ; set ES=B900
 
-              jmp 0xB800, 0x0500  ; jump to VRAM
+              jmp 0xB900, VRAM_BUFFERS  ; jump to VRAM
 
-              hlt                 ; you shouldn't get here
+              hlt                      ; you shouldn't get here
 
 setsize_vram:
-              cli                 ; clear interrupts
+backup_bda    byte 0x0100 dup (?)       ; a place to store the BIOS data area
+
+              cli                      ; clear interrupts
               tick3
+
+              ;
+              ; backup BIOS data area (0x80 words = 256 bytes)
+              ;
+
+              movedataw 0x0040, 0xB900, 0x0080  ; backup BDA to top of this section
+              setds 0xB900                      ; set DS to B900
 
               ;
               ; set our new memory size, which jumbles all RAM
@@ -115,7 +133,6 @@ setsize_vram:
               ;
 
               outpw 0x3872, bx    ; write the new memory size
-              setds 0xB800        ; set DS to B800
 
               ;
               ; disable BIOS shadowing and write protect
@@ -137,7 +154,7 @@ setsize_vram:
               movedataw 0xe000, 0x4000, 0x8000 ; backup VGA BIOS to 0x4000
               movedataw 0xf000, 0x5000, 0x8000 ; backup BIOS to 0x5000
 
-              setds 0xB800        ; put DS back to this segment
+              setds 0xB900        ; put DS back to this segment
 
               ;
               ; re-enable BIOS shadowing but keep write protect disabled
@@ -157,7 +174,7 @@ setsize_vram:
               movedataw 0x4000, 0xe000, 0x8000 ; restore VGA BIOS from 0x4000
               movedataw 0x5000, 0xf000, 0x8000 ; restore BIOS from 0x5000
               
-              setds 0xB800        ; set DS once again back to this segment
+              setds 0xB900        ; set DS once again back to this segment
 
               ;
               ; re-enable BIOS shadow write protect
@@ -174,15 +191,24 @@ setsize_vram:
               wd76_lock
 
               ;
+              ; restore BIOS data area
+              ;
+
+              movedataw 0xB900, 0x0040, 0x0080
+              setds 0xB900
+
+              ;
               ; set warm boot flag
               ;
 
-              setes 0x40          ; set ES to BIOS data area
+              setes 0x0040        ; set ES to BIOS data area
 
-              mov ax, 0x72        ;
+              mov ax, 0x0072      ;
               mov di, ax          ; set DI to warm boot flag field of BDA
 
               mov word ptr es:[di], 0x1234 ; set warm boot flag
+
+              setes 0xB900
 
               ;
               ; reset via 8042
@@ -207,6 +233,7 @@ check_kbd_user_data:
 reset:             
               outp 0x64, 0xFE     ; send reset command
               hlt                 ; wait for the keyboard controller
+
 end_setsize_code:
               hlt                 ; you shouldn't get here
 
